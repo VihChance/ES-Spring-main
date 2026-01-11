@@ -5,6 +5,8 @@ import com.example.spring.domain.user.UserRole;
 import com.example.spring.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.example.spring.services.exceptions.ConflictException;
+import com.example.spring.services.exceptions.NotFoundException;
 
 import java.util.List;
 
@@ -22,8 +24,9 @@ public class UserService {
     public User criarUser(String email, String password, UserRole role) {
 
         if (repository.findByEmail(email).isPresent()) {
-            throw new IllegalArgumentException("Email já existe");
+            throw new ConflictException("Email já existe");
         }
+
 
         User u = new User();
         u.setEmail(email);
@@ -45,26 +48,26 @@ public class UserService {
 
     // -------- DELETE --------
     public boolean apagarUser(Long id) {
-        User u = repository.findById(id).orElse(null);
-        if (u == null) {
-            return false;
-        }
+        User u = repository.findById(id).orElseThrow(() ->
+                new NotFoundException("User não encontrado")
+        );
         repository.delete(u);
         return true;
+
     }
 
     // -------- PUT --------
     public User atualizarUser(Long id, String email, UserRole role) {
 
-        User u = repository.findById(id).orElse(null);
-        if (u == null) {
-            return null;
-        }
+        User u = repository.findById(id).orElseThrow(() ->
+                new NotFoundException("User não encontrado")
+        );
 
         var outro = repository.findByEmail(email);
         if (outro.isPresent() && !outro.get().getId().equals(id)) {
-            throw new IllegalArgumentException("Email já existe");
+            throw new ConflictException("Email já existe");
         }
+
 
         u.setEmail(email);
         u.setRole(role);
@@ -84,5 +87,10 @@ public class UserService {
 
         return encoder.matches(password, user.getPassword());
     }
+
+    public User findByEmail(String email) {
+        return repository.findByEmail(email).orElse(null);
+    }
+
 
 }

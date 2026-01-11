@@ -3,9 +3,9 @@ package com.example.spring.controller;
 import com.example.spring.domain.Docente;
 import com.example.spring.services.DocenteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/docentes")
@@ -15,18 +15,18 @@ public class DocenteController {
     @Autowired
     private DocenteService docenteService;
 
-    @PostMapping
-    public Docente criarDocente(@RequestBody Docente docente) {
-        return docenteService.novoDocente(docente);
+    // 🔐 DOCENTE vê apenas o seu próprio perfil
+
+    @PreAuthorize("hasRole('DOCENTE')")
+
+
+    @GetMapping("/me")
+    public Docente meuPerfil(Authentication authentication) {
+
+        String email = authentication.getName(); // vem do JWT (subject)
+
+        return docenteService.procurarPorEmail(email);
     }
 
-    @GetMapping
-    public List<Docente> listarDocentes() {
-        return docenteService.listarTodos();
-    }
 
-    @GetMapping("/{id}")
-    public Docente getDocente(@PathVariable Long id) {
-        return docenteService.procurarPorId(id);
-    }
 }

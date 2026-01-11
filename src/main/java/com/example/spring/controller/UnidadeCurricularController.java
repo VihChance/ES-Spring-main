@@ -6,6 +6,8 @@ import com.example.spring.dto.CriarUnidadeCurricularDTO;
 import com.example.spring.services.UnidadeCurricularService;
 import com.example.spring.services.DocenteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,22 +23,30 @@ public class UnidadeCurricularController {
     @Autowired
     private DocenteService docenteService;
 
+    // 🔐 só DOCENTE
+    @PreAuthorize("hasRole('DOCENTE')")
+
+
     @PostMapping
-    public UnidadeCurricular criarUC(@RequestBody CriarUnidadeCurricularDTO dto) {
-        Docente docente = docenteService.procurarPorId(dto.docenteId());
-        if (docente == null) return null;
+    public UnidadeCurricular criarUC(
+            @RequestBody CriarUnidadeCurricularDTO dto,
+            Authentication authentication
+    ) {
+        String email = authentication.getName(); // vem do JWT
+
+        Docente docente = docenteService.procurarPorEmail(email);
 
         return ucService.criarUnidadeCurricular(dto.nome(), docente);
     }
 
-
+    // 🔐 só DOCENTE
+    @PreAuthorize("hasRole('DOCENTE')")
     @GetMapping
-    public List<UnidadeCurricular> listarUCs() {
-        return ucService.listarTodas();
-    }
+    public List<UnidadeCurricular> listarMinhasUCs(Authentication authentication) {
 
-    @GetMapping("/docente/{docenteId}")
-    public List<UnidadeCurricular> listarPorDocente(@PathVariable Long docenteId) {
-        return ucService.listarPorDocente(docenteId);
+        String email = authentication.getName();
+        Docente docente = docenteService.procurarPorEmail(email);
+
+        return ucService.listarPorDocente(docente.getId());
     }
 }

@@ -26,11 +26,12 @@ public class UserController {
     @PostMapping
     public ResponseEntity<?> criar(@Valid @RequestBody CreateUserRequest request) {
 
-        User u = service.criarUser(
+        service.criarUser(
                 request.getEmail(),
                 request.getPassword(),
                 request.getRole()
         );
+
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
