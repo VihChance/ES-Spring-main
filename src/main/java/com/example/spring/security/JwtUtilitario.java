@@ -4,40 +4,44 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import java.security.Key;
 import java.util.Date;
 
+@Component
 public class JwtUtilitario {
 
-    private static final String SECRET =
-            "minha-chave-super-secreta-min-32-chars!!!";
+    private final Key key;
+    private final long expiration;
 
-    private static final long EXPIRATION_MS = 1000 * 60 * 60;
-
-    private static final Key KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
-
-//    Converte a String SECRET numa Key criptográfica
-    public static String generateToken(String email, String role) {
-
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + EXPIRATION_MS);
-
-        return Jwts.builder() //construi token
-                .setSubject(email)//identificca user
-                .claim("role", role)
-                .setIssuedAt(now)//data craiacao
-                .setExpiration(expiry)// data expiracao
-                .signWith(KEY, SignatureAlgorithm.HS256)
-                .compact();//gera a string final
+    public JwtUtilitario(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration-ms}") long expiration
+    ) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+        this.expiration = expiration;
     }
 
-    public static Claims validateToken(String token) {
+    public String generateToken(String email, String role) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + expiration);
+
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("role", role)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public Claims validateToken(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(KEY)
+                .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 }
-

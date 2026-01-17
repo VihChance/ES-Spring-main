@@ -2,10 +2,10 @@ package com.example.spring.controller;
 
 import com.example.spring.domain.UnidadeCurricular;
 import com.example.spring.domain.Docente;
+import com.example.spring.domain.user.User;
 import com.example.spring.dto.CriarUnidadeCurricularDTO;
 import com.example.spring.services.UnidadeCurricularService;
-import com.example.spring.services.DocenteService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.spring.services.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -17,26 +17,33 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class UnidadeCurricularController {
 
-    @Autowired
-    private UnidadeCurricularService ucService;
+    private final UnidadeCurricularService ucService;
+    private final UserService userService;
 
-    @Autowired
-    private DocenteService docenteService;
+    public UnidadeCurricularController(
+            UnidadeCurricularService ucService,
+            UserService userService
+    ) {
+        this.ucService = ucService;
+        this.userService = userService;
+    }
 
     // 🔐 só DOCENTE
     @PreAuthorize("hasRole('DOCENTE')")
-
-
     @PostMapping
     public UnidadeCurricular criarUC(
             @RequestBody CriarUnidadeCurricularDTO dto,
             Authentication authentication
     ) {
-        String email = authentication.getName(); // vem do JWT
+        String email = authentication.getName(); // JWT → email
 
-        Docente docente = docenteService.procurarPorEmail(email);
+        User user = userService.findByEmail(email);
 
-        return ucService.criarUnidadeCurricular(dto.nome(), docente);
+        if (user.getDocente() == null) {
+            throw new RuntimeException("User autenticado não é um docente");
+        }
+
+        return ucService.criarUnidadeCurricular(dto.nome(), user.getDocente());
     }
 
     // 🔐 só DOCENTE
@@ -45,8 +52,13 @@ public class UnidadeCurricularController {
     public List<UnidadeCurricular> listarMinhasUCs(Authentication authentication) {
 
         String email = authentication.getName();
-        Docente docente = docenteService.procurarPorEmail(email);
 
-        return ucService.listarPorDocente(docente.getId());
+        User user = userService.findByEmail(email);
+
+        if (user.getDocente() == null) {
+            throw new RuntimeException("User autenticado não é um docente");
+        }
+
+        return ucService.listarPorDocente(user.getDocente().getId());
     }
 }

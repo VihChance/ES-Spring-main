@@ -15,6 +15,13 @@ import java.util.List;
 
 public class JwtFilter extends OncePerRequestFilter {
 
+    private final JwtUtilitario jwtUtilitario;
+
+    // 🔧 Injeta JwtUtilitario via construtor
+    public JwtFilter(JwtUtilitario jwtUtilitario) {
+        this.jwtUtilitario = jwtUtilitario;
+    }
+
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -33,8 +40,8 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = header.substring(7);
 
         try {
-            // 2️⃣ Validar token
-            Claims claims = JwtUtilitario.validateToken(token);
+            // 2️⃣ Validar token usando o bean
+            Claims claims = jwtUtilitario.validateToken(token);
 
             String email = claims.getSubject();
             String role = claims.get("role", String.class);

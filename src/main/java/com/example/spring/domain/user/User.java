@@ -1,5 +1,7 @@
 package com.example.spring.domain.user;
 
+import com.example.spring.domain.Aluno;
+import com.example.spring.domain.Docente;
 import jakarta.persistence.*;
 
 @Entity
@@ -20,6 +22,16 @@ public class User {
     @Column(nullable = false)
     private UserRole role;
 
+    @OneToOne
+    @JoinColumn(name = "aluno_id")
+    private Aluno aluno;
+
+    @OneToOne
+    @JoinColumn(name = "docente_id")
+    private Docente docente;
+
+
+    // GETTERS & SETTERS
 
     public Long getId() {
         return id;
@@ -53,4 +65,19 @@ public class User {
         this.role = role;
     }
 
+    public Aluno getAluno() {
+        return aluno;
+    }
+
+    public void setAluno(Aluno aluno) {
+        this.aluno = aluno;
+    }
+
+    public Docente getDocente() {
+        return docente;
+    }
+
+    public void setDocente(Docente docente) {
+        this.docente = docente;
+    }
 }
