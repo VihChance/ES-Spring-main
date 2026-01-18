@@ -61,4 +61,13 @@ public class UnidadeCurricularController {
 
         return ucService.listarPorDocente(user.getDocente().getId());
     }
+
+    // UnidadeCurricularController.java
+    @PreAuthorize("hasAnyRole('ALUNO','DOCENTE')")
+    @GetMapping("/todas")
+    public List<UnidadeCurricular> listarTodas() {
+        return ucService.listarTodas();
+    }
+
+
 }
