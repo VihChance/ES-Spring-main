@@ -23,14 +23,14 @@ public class AlunoController {
         this.userService = userService;
     }
 
-    // ✅ Criação de Aluno deve estar aberta (para fins de registo inicial)
+    // Criação de Aluno deve estar aberta (para fins de registo inicial)
     @PostMapping
     @PreAuthorize("permitAll()")
     public Aluno criar(@RequestBody Aluno aluno) {
         return alunoService.novoAluno(aluno);
     }
 
-    // ✅ Novo: retornar o perfil do aluno logado
+    // Novo: retornar o perfil do aluno logado
     @GetMapping("/me")
     @PreAuthorize("hasRole('ALUNO')")
     public Aluno meuPerfil(Authentication authentication) {
@@ -39,16 +39,16 @@ public class AlunoController {
         return user.getAluno(); // ← vinculado ao User
     }
 
-    // 🔐 Docente deveria ver esta lista (mas por enquanto deixamos aberta)
+    //  Docente deveria ver esta lista (mas por enquanto deixamos aberta)
     @GetMapping
-    @PreAuthorize("hasRole('DOCENTE')") // ou ADMIN futuramente
+    @PreAuthorize("hasAnyRole('DOCENTE', 'ADMIN')")
     public List<Aluno> listar() {
         return alunoService.listarTodos();
     }
 
-    // 🔐 Obter aluno por ID (acesso restrito)
+    //  Obter aluno por ID (acesso restrito)
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('DOCENTE')")
+    @PreAuthorize("hasAnyRole('DOCENTE', 'ADMIN')")
     public Aluno obter(@PathVariable Long id) {
         return alunoService.procurarPorId(id);
     }

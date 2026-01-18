@@ -7,6 +7,7 @@ import com.example.spring.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ public class UserController {
     }
 
     // ---------- POST ----------
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> criar(@Valid @RequestBody CreateUserRequest request) {
 
@@ -37,6 +39,7 @@ public class UserController {
 
 
     // ---------- GET ALL ----------
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public List<UserResponseDTO> listar() {
 
@@ -57,6 +60,7 @@ public class UserController {
     }
 
     // ---------- GET BY ID ----------
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> obterPorId(@PathVariable Long id) {
 
@@ -78,6 +82,7 @@ public class UserController {
     }
 
     // ---------- DELETE ----------
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> apagar(@PathVariable Long id) {
 
@@ -93,6 +98,7 @@ public class UserController {
     }
 
     // ---------- PUT ----------
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@PathVariable Long id,
                                        @RequestBody CreateUserRequest request) {

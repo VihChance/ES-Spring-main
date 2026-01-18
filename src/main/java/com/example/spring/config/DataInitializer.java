@@ -25,34 +25,54 @@ public class DataInitializer {
 
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-            // 📚 Criar DOCENTE + USER
-            if (userRepo.findByEmail("admin@estg.pt").isEmpty()) {
+            // ========== ADMIN ==========
+            String adminEmail = "admin@estg.pt";
+            if (userRepo.findByEmail(adminEmail).isEmpty()) {
+                User admin = new User();
+                admin.setEmail(adminEmail);
+                admin.setPassword(encoder.encode("admin123"));
+                admin.setRole(UserRole.ADMIN);
+                userRepo.save(admin);
 
-                Docente d = new Docente("Prof. Jorge Machado", "admin@estg.pt");
+                System.out.println("Admin criado com sucesso.");
+            }
+
+
+            // ========== DOCENTE ==========
+            String docenteEmail = "admin@estg.pt";
+            if (userRepo.findByEmail(docenteEmail).isEmpty()) {
+
+                Docente d = new Docente("Prof. Jorge Machado", docenteEmail);
                 docenteRepo.save(d);
 
                 User u = new User();
-                u.setEmail("admin@estg.pt");
+                u.setEmail(docenteEmail);
                 u.setPassword(encoder.encode("1234"));
                 u.setRole(UserRole.DOCENTE);
                 u.setDocente(d);
 
                 userRepo.save(u);
+
+                System.out.println("Docente + User criado com sucesso.");
             }
 
-            // 🎓 Criar ALUNO + USER
-            if (userRepo.findByEmail("aluno@estg.pt").isEmpty()) {
 
-                Aluno a = new Aluno("Maria Estudante", "aluno@estg.pt");
+            // ========== ALUNO ==========
+            String alunoEmail = "aluno@estg.pt";
+            if (userRepo.findByEmail(alunoEmail).isEmpty()) {
+
+                Aluno a = new Aluno("Maria Estudante", alunoEmail);
                 alunoRepo.save(a);
 
                 User u = new User();
-                u.setEmail("aluno@estg.pt");
+                u.setEmail(alunoEmail);
                 u.setPassword(encoder.encode("1234"));
                 u.setRole(UserRole.ALUNO);
                 u.setAluno(a);
 
                 userRepo.save(u);
+
+                System.out.println("Aluno + User criado com sucesso.");
             }
         };
     }

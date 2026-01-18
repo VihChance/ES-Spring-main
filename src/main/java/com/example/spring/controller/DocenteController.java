@@ -18,7 +18,7 @@ public class DocenteController {
         this.userService = userService;
     }
 
-    @PreAuthorize("hasRole('DOCENTE')")
+    @PreAuthorize("hasAnyRole('DOCENTE', 'ADMIN')")
     @GetMapping("/me")
     public Docente meuPerfil(Authentication authentication) {
 
@@ -29,7 +29,6 @@ public class DocenteController {
         if (user.getDocente() == null) {
             throw new RuntimeException("User não tem Docente associado");
         }
-
         return user.getDocente();
     }
 }

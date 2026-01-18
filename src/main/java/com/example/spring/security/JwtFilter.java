@@ -17,7 +17,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtilitario jwtUtilitario;
 
-    // 🔧 Injeta JwtUtilitario via construtor
+    // Injeta JwtUtilitario via construtor
     public JwtFilter(JwtUtilitario jwtUtilitario) {
         this.jwtUtilitario = jwtUtilitario;
     }
@@ -31,7 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        // 1️⃣ Não tem token → continua sem autenticação
+        // 1️ Não tem token → continua sem autenticação
         if (header == null || !header.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -40,23 +40,23 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = header.substring(7);
 
         try {
-            // 2️⃣ Validar token usando o bean
+            // Validar token usando o bean
             Claims claims = jwtUtilitario.validateToken(token);
 
             String email = claims.getSubject();
             String role = claims.get("role", String.class);
 
-            // 3️⃣ Criar authority (ROLE_DOCENTE / ROLE_ALUNO)
+            //  Criar authority (ROLE_DOCENTE / ROLE_ALUNO)
             var authority = new SimpleGrantedAuthority("ROLE_" + role);
 
-            // 4️⃣ Criar Authentication
+            //  Criar Authentication
             var auth = new UsernamePasswordAuthenticationToken(
                     email,
                     null,
                     List.of(authority)
             );
 
-            // 5️⃣ Guardar no contexto do Spring
+            //  Guardar no contexto do Spring
             SecurityContextHolder.getContext().setAuthentication(auth);
 
         } catch (Exception e) {

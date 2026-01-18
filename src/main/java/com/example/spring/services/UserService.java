@@ -7,6 +7,9 @@ import com.example.spring.domain.user.UserRole;
 import com.example.spring.repository.UserRepository;
 import com.example.spring.services.exceptions.ConflictException;
 import com.example.spring.services.exceptions.NotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +25,28 @@ public class UserService {
         this.repository = repository;
     }
 
-    // -------- POST SIMPLES --------
+    /* ───────────────────────────────
+     *  UTIL — garante que é ADMIN
+     * ─────────────────────────────── */
+    private void checkAdmin() {
+        Authentication auth = SecurityContextHolder
+                .getContext()
+                .getAuthentication();
+
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(a -> a.equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            throw new SecurityException("Apenas ADMIN pode executar esta operação");
+        }
+    }
+
+    /* ───────────── CREATE ───────────── */
+
     public User criarUser(String email, String password, UserRole role) {
+        checkAdmin();
+
         if (repository.findByEmail(email).isPresent()) {
             throw new ConflictException("Email já existe");
         }
@@ -36,8 +59,15 @@ public class UserService {
         return repository.save(u);
     }
 
-    // -------- POST COM LIGAÇÃO --------
-    public User criarUserComVinculo(String email, String password, UserRole role, Aluno aluno, Docente docente) {
+    public User criarUserComVinculo(
+            String email,
+            String password,
+            UserRole role,
+            Aluno aluno,
+            Docente docente
+    ) {
+        checkAdmin();
+
         if (repository.findByEmail(email).isPresent()) {
             throw new ConflictException("Email já existe");
         }
@@ -52,27 +82,33 @@ public class UserService {
         return repository.save(u);
     }
 
-    // -------- GET ALL --------
+    /* ───────────── READ ───────────── */
+
     public List<User> listarUsers() {
+        checkAdmin();
         return repository.findAll();
     }
 
-    // -------- GET BY ID --------
     public User loadUser(Long id) {
+        checkAdmin();
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User não encontrado"));
     }
 
-    // -------- DELETE --------
-    public boolean apagarUser(Long id) {
-        User u = loadUser(id);
-        repository.delete(u);
-        return true;
+    public User findByEmail(String email) {
+        return repository.findByEmail(email)
+                .orElseThrow(() ->
+                        new NotFoundException("User com email '" + email + "' não encontrado")
+                );
     }
 
-    // -------- PUT --------
+    /* ───────────── UPDATE ───────────── */
+
     public User atualizarUser(Long id, String email, UserRole role) {
-        User u = loadUser(id);
+        checkAdmin();
+
+        User u = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User não encontrado"));
 
         var outro = repository.findByEmail(email);
         if (outro.isPresent() && !outro.get().getId().equals(id)) {
@@ -84,7 +120,26 @@ public class UserService {
         return repository.save(u);
     }
 
-    // -------- LOGIN QUE RETORNA USER --------
+    /* ───────────── DELETE ───────────── */
+
+    public boolean apagarUser(Long id) {
+        checkAdmin();
+
+        User u = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User não encontrado"));
+
+        // não apagar o último ADMIN
+        if (u.getRole() == UserRole.ADMIN &&
+                repository.countByRole(UserRole.ADMIN) == 1) {
+            throw new ConflictException("Não é possível apagar o único ADMIN");
+        }
+
+        repository.delete(u);
+        return true;
+    }
+
+    /* ───────────── LOGIN ───────────── */
+
     public User login(String email, String password) {
         User user = repository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Email inválido"));
@@ -94,11 +149,5 @@ public class UserService {
         }
 
         return user;
-    }
-
-    // -------- FIND BY EMAIL --------
-    public User findByEmail(String email) {
-        return repository.findByEmail(email)
-                .orElseThrow(() -> new NotFoundException("User com email '" + email + "' não encontrado"));
     }
 }

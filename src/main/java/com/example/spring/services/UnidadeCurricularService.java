@@ -3,6 +3,7 @@ package com.example.spring.services;
 import com.example.spring.domain.Docente;
 import com.example.spring.domain.UnidadeCurricular;
 import com.example.spring.repository.UnidadeCurricularRepository;
+import com.example.spring.services.exceptions.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -28,5 +29,10 @@ public class UnidadeCurricularService {
     /* ───── Listar UCs por docente ─── */
     public List<UnidadeCurricular> listarPorDocente(Long docenteId) {
         return ucRepository.findByDocenteId(docenteId);
+    }
+
+    public UnidadeCurricular procurarPorId(Long id) {
+        return ucRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("UC não encontrada"));
     }
 }

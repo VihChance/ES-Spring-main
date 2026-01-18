@@ -28,26 +28,31 @@ public class UnidadeCurricularController {
         this.userService = userService;
     }
 
-    // 🔐 só DOCENTE
-    @PreAuthorize("hasRole('DOCENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping
     public UnidadeCurricular criarUC(
             @RequestBody CriarUnidadeCurricularDTO dto,
             Authentication authentication
     ) {
-        String email = authentication.getName(); // JWT → email
-
+        String email = authentication.getName();
         User user = userService.findByEmail(email);
 
-        if (user.getDocente() == null) {
+        Docente docente;
+
+        if (user.getRole().name().equals("ADMIN")) {
+            throw new RuntimeException("ADMIN deve usar outro endpoint ou fornecer ID do docente.");
+        } else if (user.getDocente() == null) {
             throw new RuntimeException("User autenticado não é um docente");
+        } else {
+            docente = user.getDocente();
         }
 
-        return ucService.criarUnidadeCurricular(dto.nome(), user.getDocente());
+        return ucService.criarUnidadeCurricular(dto.nome(), docente);
     }
 
-    // 🔐 só DOCENTE
-    @PreAuthorize("hasRole('DOCENTE')")
+
+    //  só DOCENTE
+    @PreAuthorize("hasAnyRole('DOCENTE', 'ADMIN')")
     @GetMapping
     public List<UnidadeCurricular> listarMinhasUCs(Authentication authentication) {
 
@@ -61,4 +66,13 @@ public class UnidadeCurricularController {
 
         return ucService.listarPorDocente(user.getDocente().getId());
     }
+
+    // UnidadeCurricularController.java
+    @PreAuthorize("hasAnyRole('ALUNO','DOCENTE','ADMIN')")
+    @GetMapping("/todas")
+    public List<UnidadeCurricular> listarTodas() {
+        return ucService.listarTodas();
+    }
+
+
 }
