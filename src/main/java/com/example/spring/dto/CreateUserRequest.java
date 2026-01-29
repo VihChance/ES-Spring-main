@@ -8,6 +8,9 @@ import jakarta.validation.constraints.Size;
 
 public class CreateUserRequest {
 
+    @NotBlank(message = "Nome é obrigatório")
+    private String nome;
+
     @NotBlank(message = "Email é obrigatório")
     @Email(message = "Email inválido")
     private String email;
@@ -16,8 +19,18 @@ public class CreateUserRequest {
     @Size(min = 4, message = "Password deve ter pelo menos 4 caracteres")
     private String password;
 
-    @NotNull(message = "Role é obrigatório")
+    @NotNull(message = "Role é obrigatória")
     private UserRole role;
+
+    // Getters e Setters
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
 
     public String getEmail() {
         return email;
