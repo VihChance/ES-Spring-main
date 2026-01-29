@@ -9,7 +9,9 @@ public class Fase {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String titulo;
+
     private int ordem;        // 1-N
 
     @ManyToOne
