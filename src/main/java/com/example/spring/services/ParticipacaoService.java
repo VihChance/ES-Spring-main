@@ -6,10 +6,12 @@ import com.example.spring.domain.Participacao;
 import com.example.spring.repository.AlunoRepository;
 import com.example.spring.repository.ExercicioRepository;
 import com.example.spring.repository.ParticipacaoRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ParticipacaoService {
@@ -29,23 +31,33 @@ public class ParticipacaoService {
     }
 
     // ───────────── Criar participação ─────────────
+    @Transactional
     public Participacao criarParticipacao(Long alunoId, Long exercicioId) {
-
-        if (participacaoRepository.existsByAlunoIdAndExercicioId(alunoId, exercicioId)) {
-            throw new RuntimeException("Este aluno já participou neste exercício.");
-        }
-
         Aluno aluno = alunoRepository.findById(alunoId)
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 
         Exercicio exercicio = exercicioRepository.findById(exercicioId)
                 .orElseThrow(() -> new RuntimeException("Exercício não encontrado"));
 
-        Participacao participacao = new Participacao(aluno, exercicio);
-        participacao.setFasesCompletas(new ArrayList<>());
+        // 1) Se já existe, devolve a mesma (e garante que Exercicio está carregado)
+        Optional<Participacao> existente = participacaoRepository
+                .findByAlunoAndExercicio(aluno, exercicio);
 
-        return participacaoRepository.save(participacao);
+        if (existente.isPresent()) {
+            Participacao p = existente.get();
+            // “toca” no id para forçar o load se a relação for LAZY
+            p.getExercicio().getId();
+            return p;
+        }
+
+        // 2) Se não existir, cria e devolve com exercicio carregado
+        Participacao nova = new Participacao(aluno, exercicio);
+        Participacao salva = participacaoRepository.save(nova);
+        // idem: garante que vem no payload
+        salva.getExercicio().getId();
+        return salva;
     }
+
 
     // ─────────── Marcar fase concluída ───────────
     public boolean marcarFaseConcluida(Long participacaoId, Long faseId) {

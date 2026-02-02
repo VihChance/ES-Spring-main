@@ -2,9 +2,13 @@ package com.example.spring.controller;
 
 import com.example.spring.domain.Participacao;
 import com.example.spring.dto.NovaParticipacaoDTO;
+import com.example.spring.dto.ParticipacaoDTO;
+import com.example.spring.dto.ParticipacaoMapper;
+import com.example.spring.repository.ParticipacaoRepository;
 import com.example.spring.services.ParticipacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,18 +23,24 @@ public class ParticipacaoController {
     @Autowired
     private ParticipacaoService participacaoService;
 
-    //Apenas ALUNO pode entrar num exercício
+    @Autowired
+    private ParticipacaoRepository participacaoRepository;
+
+    // Apenas ALUNO pode entrar num exercício
     @PreAuthorize("hasRole('ALUNO')")
     @PostMapping(consumes = "application/json")
-    public Participacao criarViaJson(@RequestBody NovaParticipacaoDTO dto) {
+    public ResponseEntity<ParticipacaoDTO> criarViaJson(@RequestBody NovaParticipacaoDTO dto) {
         try {
-            return participacaoService.criarParticipacao(dto.alunoId(), dto.exercicioId());
+            Participacao p = participacaoService.criarParticipacao(dto.alunoId(), dto.exercicioId());
+            // garante que o Exercicio está carregado
+            p.getExercicio().getId();
+            return ResponseEntity.ok(ParticipacaoMapper.toDTO(p));
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
     }
 
-    //  ALUNO marca fase como concluída
+    // ALUNO marca fase como concluída
     @PreAuthorize("hasRole('ALUNO')")
     @PostMapping("/{participacaoId}/fase/{faseId}/concluir")
     public boolean concluirFase(@PathVariable Long participacaoId,
@@ -45,7 +55,7 @@ public class ParticipacaoController {
         return participacaoService.chamarDocente(participacaoId);
     }
 
-    //DOCENTE atribui nota e termina
+    // DOCENTE atribui nota e termina
     @PreAuthorize("hasRole('DOCENTE')")
     @PostMapping("/{participacaoId}/atribuir-nota")
     public boolean atribuirNota(@PathVariable Long participacaoId,
@@ -53,10 +63,13 @@ public class ParticipacaoController {
         return participacaoService.atribuirNota(participacaoId, nota);
     }
 
-    // ALUNO vê suas participações
+    // ALUNO vê suas participações — devolve DTO com exercicioId + titulo
     @PreAuthorize("hasRole('ALUNO')")
     @GetMapping("/aluno/{alunoId}")
-    public List<Participacao> listarParticipacoesPorAluno(@PathVariable Long alunoId) {
-        return participacaoService.listarPorAluno(alunoId);
+    public List<ParticipacaoDTO> listarPorAluno(@PathVariable Long alunoId) {
+        return participacaoRepository.findAllByAlunoIdFetchExercicio(alunoId)
+                .stream()
+                .map(ParticipacaoMapper::toDTO)
+                .toList();
     }
 }
