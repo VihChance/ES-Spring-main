@@ -30,9 +30,18 @@ public class DashboardService {
         List<Map<String, Object>> progressoAlunos = new ArrayList<>();
 
         for (Participacao p : participacoes) {
-            int fasesConcluidas = (p.getFasesCompletas() == null) ? 0 : p.getFasesCompletas().size();
-            int percentagem = (totalFases == 0) ? 0 : (int) Math.round(fasesConcluidas * 100.0 / totalFases);
-            int faseAtual = (totalFases == 0) ? 0 : Math.min(fasesConcluidas + 1, totalFases);
+
+            int fasesConcluidas = (p.getFasesConcluidas() == null)
+                    ? 0
+                    : p.getFasesConcluidas().size();
+
+            int percentagem = (totalFases == 0)
+                    ? 0
+                    : (int) Math.round(fasesConcluidas * 100.0 / totalFases);
+
+            int faseAtual = (totalFases == 0)
+                    ? 0
+                    : Math.min(fasesConcluidas + 1, totalFases);
 
             Map<String, Object> alunoMap = new HashMap<>();
             alunoMap.put("aluno", p.getAluno().getNome());

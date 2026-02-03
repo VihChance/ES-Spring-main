@@ -31,8 +31,7 @@ public class Participacao {
     private List<Long> fasesConcluidas = new ArrayList<>();
 
     // ─────────────── CONSTRUTORES ───────────────
-    public Participacao() {
-    }
+    public Participacao() {}
 
     public Participacao(Aluno aluno, Exercicio exercicio) {
         this.aluno = aluno;
@@ -40,6 +39,7 @@ public class Participacao {
     }
 
     // ─────────────── GETTERS/SETTERS ───────────────
+
     public Long getId() {
         return id;
     }
@@ -91,17 +91,4 @@ public class Participacao {
     public void setFasesConcluidas(List<Long> fasesConcluidas) {
         this.fasesConcluidas = fasesConcluidas;
     }
-
-    // Fases concluídas pelo aluno (IDs das fases)
-    @ElementCollection
-    private List<Long> fasesCompletas;
-
-    public List<Long> getFasesCompletas() {
-        return fasesCompletas;
-    }
-
-    public void setFasesCompletas(List<Long> fasesCompletas) {
-        this.fasesCompletas = fasesCompletas;
-    }
-
 }

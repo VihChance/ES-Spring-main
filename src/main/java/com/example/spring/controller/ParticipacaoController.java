@@ -26,48 +26,67 @@ public class ParticipacaoController {
     @Autowired
     private ParticipacaoRepository participacaoRepository;
 
-    // Apenas ALUNO pode entrar num exercício
+    // ─────────── Criar participação ───────────
     @PreAuthorize("hasRole('ALUNO')")
     @PostMapping(consumes = "application/json")
     public ResponseEntity<ParticipacaoDTO> criarViaJson(@RequestBody NovaParticipacaoDTO dto) {
         try {
-            Participacao p = participacaoService.criarParticipacao(dto.alunoId(), dto.exercicioId());
-            // garante que o Exercicio está carregado
-            p.getExercicio().getId();
+            Participacao p =
+                    participacaoService.criarParticipacao(dto.alunoId(), dto.exercicioId());
+
             return ResponseEntity.ok(ParticipacaoMapper.toDTO(p));
+
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
     }
 
-    // ALUNO marca fase como concluída
+    // ─────────── Marcar fase como concluída ───────────
     @PreAuthorize("hasRole('ALUNO')")
     @PostMapping("/{participacaoId}/fase/{faseId}/concluir")
-    public boolean concluirFase(@PathVariable Long participacaoId,
-                                @PathVariable Long faseId) {
-        return participacaoService.marcarFaseConcluida(participacaoId, faseId);
+    public ResponseEntity<ParticipacaoDTO> concluirFase(
+            @PathVariable Long participacaoId,
+            @PathVariable Long faseId) {
+
+        ParticipacaoDTO dto =
+                participacaoService.marcarFaseConcluida(participacaoId, faseId);
+
+        return ResponseEntity.ok(dto);
     }
 
-    // ALUNO chama o docente
+
+    // ─────────── Chamar docente ───────────
     @PreAuthorize("hasRole('ALUNO')")
-    @PostMapping("/{participacaoId}/chamar-docente")
-    public boolean chamarDocente(@PathVariable Long participacaoId) {
-        return participacaoService.chamarDocente(participacaoId);
+    @PutMapping("/{participacaoId}/chamar-docente")
+    public ResponseEntity<ParticipacaoDTO> chamarDocente(
+            @PathVariable Long participacaoId) {
+
+        ParticipacaoDTO dto =
+                participacaoService.chamarDocente(participacaoId);
+
+        return ResponseEntity.ok(dto);
     }
 
-    // DOCENTE atribui nota e termina
+    // ─────────── Atribuir nota ───────────
     @PreAuthorize("hasRole('DOCENTE')")
-    @PostMapping("/{participacaoId}/atribuir-nota")
-    public boolean atribuirNota(@PathVariable Long participacaoId,
-                                @RequestParam Double nota) {
-        return participacaoService.atribuirNota(participacaoId, nota);
+    @PutMapping("/{participacaoId}/atribuir-nota")
+    public ResponseEntity<ParticipacaoDTO> atribuirNota(
+            @PathVariable Long participacaoId,
+            @RequestParam Double nota) {
+
+        ParticipacaoDTO dto =
+                participacaoService.atribuirNota(participacaoId, nota);
+
+        return ResponseEntity.ok(dto);
     }
 
-    // ALUNO vê suas participações — devolve DTO com exercicioId + titulo
+    // ─────────── Listar participações do aluno ───────────
     @PreAuthorize("hasRole('ALUNO')")
     @GetMapping("/aluno/{alunoId}")
     public List<ParticipacaoDTO> listarPorAluno(@PathVariable Long alunoId) {
-        return participacaoRepository.findAllByAlunoIdFetchExercicio(alunoId)
+
+        return participacaoRepository
+                .findAllByAlunoIdFetchExercicio(alunoId)
                 .stream()
                 .map(ParticipacaoMapper::toDTO)
                 .toList();
