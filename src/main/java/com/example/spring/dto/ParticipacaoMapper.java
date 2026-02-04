@@ -16,7 +16,9 @@ public class ParticipacaoMapper {
                 p.getExercicio().getId(),
                 p.getExercicio().getTitulo(),
                 fases,
-                p.isChamado()
+                p.isChamado(),
+                p.isTerminado(),
+                p.getNota()
         );
     }
 }

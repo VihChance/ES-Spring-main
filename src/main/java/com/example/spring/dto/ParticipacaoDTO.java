@@ -7,6 +7,8 @@ public record ParticipacaoDTO(
         Long exercicioId,
         String exercicioTitulo,
         List<Long> fasesCompletas,
-        boolean chamado
+        boolean chamado,
+        boolean terminado,
+        Double nota
 ) {}
 

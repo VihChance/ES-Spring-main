@@ -27,6 +27,8 @@ public class Participacao {
 
     private boolean chamado = false;
 
+
+
     @ElementCollection
     private List<Long> fasesConcluidas = new ArrayList<>();
 

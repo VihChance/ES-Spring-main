@@ -10,6 +10,7 @@ import com.example.spring.repository.ExercicioRepository;
 import com.example.spring.repository.ParticipacaoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
+import com.example.spring.repository.FaseRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,15 +21,18 @@ public class ParticipacaoService {
     private final ParticipacaoRepository participacaoRepository;
     private final AlunoRepository alunoRepository;
     private final ExercicioRepository exercicioRepository;
+    private final FaseRepository faseRepository;
 
     public ParticipacaoService(
             ParticipacaoRepository participacaoRepository,
             AlunoRepository alunoRepository,
-            ExercicioRepository exercicioRepository
+            ExercicioRepository exercicioRepository,
+            FaseRepository faseRepository
     ) {
         this.participacaoRepository = participacaoRepository;
         this.alunoRepository = alunoRepository;
         this.exercicioRepository = exercicioRepository;
+        this.faseRepository = faseRepository;
     }
 
     // ───────────── Criar participação ─────────────
@@ -63,14 +67,28 @@ public class ParticipacaoService {
         Participacao p = participacaoRepository.findById(participacaoId)
                 .orElseThrow(() -> new RuntimeException("Participação não encontrada"));
 
+        // 1) Adicionar a fase se ainda não estiver na lista
         if (!p.getFasesConcluidas().contains(faseId)) {
             p.getFasesConcluidas().add(faseId);
         }
 
-        participacaoRepository.save(p);
+        // 2) Ir buscar TODAS as fases deste exercício
+        var fasesDoExercicio = faseRepository
+                .findByExercicioIdOrderByOrdemAsc(p.getExercicio().getId());
 
-        return ParticipacaoMapper.toDTO(p);
+        // 3) Verificar se todas as fases estão concluídas
+        boolean todasConcluidas =
+                !fasesDoExercicio.isEmpty() &&
+                        fasesDoExercicio.stream()
+                                .allMatch(f -> p.getFasesConcluidas().contains(f.getId()));
+
+        p.setTerminado(todasConcluidas);   // 🔹 aqui marcamos/limpamos o "terminado"
+
+        Participacao guardada = participacaoRepository.save(p);
+
+        return ParticipacaoMapper.toDTO(guardada);
     }
+
 
 
     // ─────────────── Chamar docente ──────────────
