@@ -39,14 +39,13 @@ public class AlunoController {
         return user.getAluno(); // ← vinculado ao User
     }
 
-    //  Docente deveria ver esta lista (mas por enquanto deixamos aberta)
-    @GetMapping
+    //  Docente deveria ver esta lista
     @PreAuthorize("hasAnyRole('DOCENTE', 'ADMIN')")
     public List<Aluno> listar() {
         return alunoService.listarTodos();
     }
 
-    //  Obter aluno por ID (acesso restrito)
+    //  Obter aluno por ID
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('DOCENTE', 'ADMIN')")
     public Aluno obter(@PathVariable Long id) {

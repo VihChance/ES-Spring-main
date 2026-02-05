@@ -1,6 +1,7 @@
 package com.example.spring.dto;
 
 public record CriarUnidadeCurricularDTO(
-        String nome
+        String nome,
+        Long docenteId
 ) {}
 
