@@ -24,10 +24,11 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/login", "/api/users").permitAll()
+                        .requestMatchers("/", "/index.html", "/assets/**", "/vite.svg", "/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
-                        new JwtFilter(jwtUtilitario), // 💉 injeta aqui
+                        new JwtFilter(jwtUtilitario),
                         UsernamePasswordAuthenticationFilter.class
                 );
 
