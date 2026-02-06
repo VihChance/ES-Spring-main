@@ -80,6 +80,15 @@ public class ParticipacaoController {
         return ResponseEntity.ok(dto);
     }
 
+    @PutMapping("/{participacaoId}/terminar")
+    public ResponseEntity<ParticipacaoDTO> terminar(
+            @PathVariable Long participacaoId) {
+        return ResponseEntity.ok(
+                participacaoService.terminarParticipacao(participacaoId)
+        );
+    }
+
+
     // ─────────── Listar participações do aluno ───────────
     @PreAuthorize("hasRole('ALUNO')")
     @GetMapping("/aluno/{alunoId}")

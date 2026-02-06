@@ -2,8 +2,11 @@ package com.example.spring.services;
 
 import com.example.spring.domain.Exercicio;
 import com.example.spring.domain.UnidadeCurricular;
+import com.example.spring.dto.ExercicioDTO;
 import com.example.spring.repository.ExercicioRepository;
 import com.example.spring.repository.UnidadeCurricularRepository;
+import com.example.spring.services.exceptions.NotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -72,7 +75,6 @@ public class ExercicioService {
 
         Exercicio salvo = exercicioRepository.save(ex);
 
-        //AQUI NOTIFICA
         if (messagingTemplate != null) {
             ExercicioCriadoMessage msg = new ExercicioCriadoMessage(
                     salvo.getId(),
@@ -93,6 +95,16 @@ public class ExercicioService {
     // 2. Listar exercícios de uma UC
     public List<Exercicio> listarPorUnidadeCurricular(Long ucId) {
         return exercicioRepository.findByUnidadeCurricularId(ucId);
+    }
+
+    @Transactional
+    public Exercicio encerrarExercicio(Long exercicioId) {
+
+        Exercicio ex = exercicioRepository.findById(exercicioId)
+                .orElseThrow(() -> new RuntimeException("Exercício não encontrado"));
+
+        ex.setEncerrado(true);
+        return exercicioRepository.save(ex);
     }
 
     // 3. Procurar por ID

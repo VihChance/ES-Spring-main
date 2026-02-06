@@ -29,9 +29,17 @@ public class Exercicio {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Participacao> participacoes;
 
+    private boolean encerrado = false;
 
     public Exercicio() {
     }
+
+
+    public boolean isEncerrado() {
+        return encerrado;
+    }
+
+
 
     public Exercicio(String titulo, LocalDate dataCriacao, UnidadeCurricular unidadeCurricular) {
         this.titulo = titulo;
@@ -40,6 +48,10 @@ public class Exercicio {
     }
 
     // Getters e Setters
+    public void setEncerrado(boolean encerrado) {
+        this.encerrado = encerrado;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

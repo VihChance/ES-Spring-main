@@ -54,9 +54,15 @@ public class ParticipacaoService {
             return p;
         }
 
+        if (exercicio.isEncerrado()) {
+            throw new RuntimeException("Este exercício já foi encerrado.");
+        }
+
         Participacao nova = new Participacao(aluno, exercicio);
         Participacao salva = participacaoRepository.save(nova);
         salva.getExercicio().getId();
+
+
         return salva;
     }
 
@@ -67,16 +73,21 @@ public class ParticipacaoService {
         Participacao p = participacaoRepository.findById(participacaoId)
                 .orElseThrow(() -> new RuntimeException("Participação não encontrada"));
 
-        // 1) Adicionar a fase se ainda não estiver na lista
+
+        if (p.getExercicio().isEncerrado()) {
+            throw new RuntimeException("O exercício está encerrado.");
+        }
+
+        // Adicionar a fase se ainda não estiver na lista
         if (!p.getFasesConcluidas().contains(faseId)) {
             p.getFasesConcluidas().add(faseId);
         }
 
-        // 2) Ir buscar TODAS as fases deste exercício
+        //  Ir buscar TODAS as fases deste exercício
         var fasesDoExercicio = faseRepository
                 .findByExercicioIdOrderByOrdemAsc(p.getExercicio().getId());
 
-        // 3) Verificar se todas as fases estão concluídas
+        //  Verificar se todas as fases estão concluídas
         boolean todasConcluidas =
                 !fasesDoExercicio.isEmpty() &&
                         fasesDoExercicio.stream()
@@ -85,6 +96,7 @@ public class ParticipacaoService {
         p.setTerminado(todasConcluidas);   // 🔹 aqui marcamos/limpamos o "terminado"
 
         Participacao guardada = participacaoRepository.save(p);
+
 
         return ParticipacaoMapper.toDTO(guardada);
     }
@@ -112,11 +124,21 @@ public class ParticipacaoService {
                 .orElseThrow(() -> new RuntimeException("Participação não encontrada"));
 
         p.setNota(nota);
-        p.setTerminado(true);
+       // p.setTerminado(true);
         participacaoRepository.save(p);
 
         return ParticipacaoMapper.toDTO(p);
     }
+
+    @Transactional
+    public ParticipacaoDTO terminarParticipacao(Long participacaoId) {
+        Participacao p = participacaoRepository.findById(participacaoId)
+                .orElseThrow(() -> new RuntimeException("Participação não encontrada"));
+        p.setTerminado(true);
+        participacaoRepository.save(p);
+        return ParticipacaoMapper.toDTO(p);
+    }
+
 
     // ───────────── Listar por aluno ──────────────
     public List<Participacao> listarPorAluno(Long alunoId) {

@@ -44,4 +44,11 @@ public class ExercicioController {
         }
         return ResponseEntity.ok(ex);
     }
+
+    @PutMapping("/{id}/encerrar")
+    public ResponseEntity<Exercicio> encerrar(@PathVariable Long id) {
+        Exercicio ex = exercicioService.encerrarExercicio(id);
+        return ResponseEntity.ok(ex);
+    }
+
 }
