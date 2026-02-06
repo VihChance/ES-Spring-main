@@ -24,7 +24,7 @@ public class ExercicioService {
     @Autowired
     private UnidadeCurricularRepository ucRepository;
 
-    @Autowired
+    @Autowired(required = false)
     private SimpMessagingTemplate messagingTemplate;
 
 
@@ -72,18 +72,20 @@ public class ExercicioService {
 
         Exercicio salvo = exercicioRepository.save(ex);
 
-        //  Notificar todos os clientes que um exercício foi criado
-        ExercicioCriadoMessage msg = new ExercicioCriadoMessage(
-                salvo.getId(),
-                uc.getId(),
-                salvo.getTitulo()
-        );
+        //AQUI NOTIFICA
+        if (messagingTemplate != null) {
+            ExercicioCriadoMessage msg = new ExercicioCriadoMessage(
+                    salvo.getId(),
+                    uc.getId(),
+                    salvo.getTitulo()
+            );
 
-        // tópico geral ou por-UC; aqui faço por-UC para ser mais “pro”
-        messagingTemplate.convertAndSend(
-                "/topic/exercicios.uc." + uc.getId(),
-                msg
-        );
+            // tópico por UC: /topic/exercicios.uc.{id}
+            messagingTemplate.convertAndSend(
+                    "/topic/exercicios.uc." + uc.getId(),
+                    msg
+            );
+        }
 
         return salvo;
     }

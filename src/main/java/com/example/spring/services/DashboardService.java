@@ -53,6 +53,9 @@ public class DashboardService {
             alunoMap.put("percentagem", percentagem);
             alunoMap.put("faseAtual", faseAtual);
 
+            alunoMap.put("participacaoId", p.getId());
+            alunoMap.put("alunoId", p.getAluno().getId());
+
             progressoAlunos.add(alunoMap);
         }
 
