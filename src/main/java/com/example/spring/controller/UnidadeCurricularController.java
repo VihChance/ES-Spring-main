@@ -70,4 +70,32 @@ public class UnidadeCurricularController {
     public List<UnidadeCurricular> listarTodas() {
         return ucService.listarTodas();
     }
+
+    @PreAuthorize("hasRole('ALUNO')")
+    @GetMapping("/minhas")
+    public List<UnidadeCurricular> listarMinhasUCsAluno(Authentication authentication) {
+
+        String email = authentication.getName();
+        User user = userService.findByEmail(email);
+
+        if (user.getAluno() == null) {
+            throw new RuntimeException("User autenticado não é um aluno");
+        }
+
+        Long alunoId = user.getAluno().getId();
+        return ucService.listarPorAluno(alunoId);
+    }
+
+    // ─────────────────────────────
+    // 4) ADMIN associa aluno a uma UC
+    // ─────────────────────────────
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{ucId}/alunos/{alunoId}")
+    public void associarAlunoAUC(@PathVariable Long ucId,
+                                 @PathVariable Long alunoId) {
+
+        ucService.associarAlunoAUC(alunoId, ucId);
+    }
+
+
 }

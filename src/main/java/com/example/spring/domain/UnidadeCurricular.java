@@ -1,6 +1,8 @@
 package com.example.spring.domain;
 
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -17,12 +19,24 @@ public class UnidadeCurricular {
     @JoinColumn(name = "docente_id")
     private Docente docente;
 
-//    @OneToMany(mappedBy = "unidadeCurricular", cascade = CascadeType.ALL)
-//    private List<Exercicio> exercicios;
-
     @OneToMany(mappedBy = "unidadeCurricular", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Exercicio> exercicios;
+
+
+    @ManyToMany(mappedBy = "unidadesCurriculares")
+    @JsonIgnore
+    private List<Aluno> alunos = new ArrayList<>();
+
+    public List<Aluno> getAlunos() {
+        return alunos;
+    }
+
+    public void setAlunos(List<Aluno> alunos) {
+        this.alunos = alunos;
+    }
+
+
 
     public UnidadeCurricular() {
     }

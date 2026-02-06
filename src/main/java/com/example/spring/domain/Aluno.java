@@ -1,6 +1,9 @@
 package com.example.spring.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -38,4 +41,23 @@ public class Aluno {
 
     public List<Participacao> getParticipacoes() { return participacoes; }
     public void setParticipacoes(List<Participacao> participacoes) { this.participacoes = participacoes; }
+
+    @ManyToMany
+    @JoinTable(
+            name = "aluno_uc",
+            joinColumns = @JoinColumn(name = "aluno_id"),
+            inverseJoinColumns = @JoinColumn(name = "uc_id")
+    )
+    @JsonIgnore   // para não mandar isto diretamente no JSON do aluno
+    private List<UnidadeCurricular> unidadesCurriculares = new ArrayList<>();
+
+    // getters/setters
+    public List<UnidadeCurricular> getUnidadesCurriculares() {
+        return unidadesCurriculares;
+    }
+
+    public void setUnidadesCurriculares(List<UnidadeCurricular> unidadesCurriculares) {
+        this.unidadesCurriculares = unidadesCurriculares;
+    }
+
 }
